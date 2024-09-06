@@ -1,5 +1,8 @@
 package org.example;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 public class Grid {
 
     int[][] board;
@@ -13,12 +16,22 @@ public class Grid {
     // method to set a living cell
     public void setCellAlive(int row, int column)
     {
-        board[row][column] = 1;
+        try { board[row][column] = 1; }
+        catch (Exception e) { System.out.println(e.getMessage()); }
+    }
+
+    public void setCellDead(int row, int column)
+    {
+        try { board[row][column] = 0; }
+        catch (Exception e) { System.out.println(e.getMessage()); }
     }
 
     // produces next generation of cells according to Conway's rules
     public void nextGen()
     {
+        ArrayList<int[]> cellsToDie = new ArrayList<>();
+        ArrayList<int[]> cellsToComeAlive = new ArrayList<>();
+
         // traverse the entire 2D array to identify all living cells
         for (int i=0; i<board.length; i++)
         {
@@ -28,30 +41,139 @@ public class Grid {
                 // if cell is alive, check for 2-3 neighbors
                 if (cell == 1)
                 {
-                    int numNeighbors = findLiveNeighbors(i, j);
-                    // identify dead neighbors
-                    // test each dead neighbor for 3 neighbors - if yes, add to list to make alive later
-                    if (numNeighbors != 2 && numNeighbors != 3)
+                    int liveNeighbors = findLiveNeighbors(i, j);
+                    // will die if it does not have 2 or 3 neighbors (1 or less, 4 or more)
+                    if (liveNeighbors != 2 && liveNeighbors != 3)
                     {
-                        board[i][j] = 0; // cell dies
+                        int[] cellLocation = {i, j};
+                        cellsToDie.add(cellLocation);
+                    }
+                    // identify all dead neighbors
+                    ArrayList<int[]> deadNeighbors = findDeadNeighbors(i, j);
+                    // loop through all dead cells, check if they have 3+ neighbors
+                    for (int[] deadCell : deadNeighbors)
+                    {
+                        if (findLiveNeighbors(deadCell[0], deadCell[1]) >= 3) {
+                            if (!cellsToComeAlive.contains(deadCell))
+                                cellsToComeAlive.add(deadCell);
+                        }
                     }
                 }
             }
         }
-        // 2. test each living cell for having 2-3 neighbors
-        //       - if not, cell dies.
-        // 3. identify all dead cells that are neighbors with this cell
-        //   test each dead cell for 3 living neighbors
-        //       - if so, cell comes alive.
+        // kill all cells in cellsToDie
+        for (int[] cellToKill : cellsToDie)
+            setCellDead(cellToKill[0], cellToKill[1]);
 
-        //
+        // revive all cells in cellsToComeAlive
+        for (int[] cellToRevive : cellsToComeAlive)
+            setCellAlive(cellToRevive[0], cellToRevive[1]);
     }
 
     public int findLiveNeighbors(int row, int column)
     {
-        int neighbors = 0;
+        int liveNeighbors = 0;
 
-        return neighbors;
+        boolean hasTop = row > 0; // a higher row exists
+        boolean hasBottom = row < board.length-1; // a lower row exists
+        boolean hasLeft = column > 0; // a left column exists
+        boolean hasRight = column < board[0].length-1; // a right column exists
+
+        if (hasTop) {
+            // check if cell directly above current cell is alive
+            if (board[row-1][column] == 1)
+                liveNeighbors++;
+            if (hasLeft) {
+                // check if diagonal upper left cell is alive
+                if (board[row-1][column-1] == 1)
+                    liveNeighbors++;
+            }
+            if (hasRight) {
+                // check if diagonal upper right cell is alive
+                if (board[row-1][column+1] == 1)
+                    liveNeighbors++;
+            }
+        }
+        if (hasBottom) {
+            // check if cell directly below current cell is alive
+            if (board[row+1][column] == 1)
+                liveNeighbors++;
+            if (hasLeft) {
+                // check if diagonal lower left cell is alive
+                if (board[row+1][column-1] == 1)
+                    liveNeighbors++;
+            }
+            if (hasRight) {
+                // check if diagonal lower right cell is alive
+                if (board[row+1][column+1] == 1)
+                    liveNeighbors++;
+            }
+        }
+        if (hasLeft) {
+            // check if adjacent left cell is alive
+            if (board[row][column-1] == 1)
+                liveNeighbors++;
+        }
+        if (hasRight) {
+            // check if adjacent right cell is alive
+            if (board[row][column+1] == 1)
+                liveNeighbors++;
+        }
+
+        return liveNeighbors;
+    }
+
+    public ArrayList<int[]> findDeadNeighbors(int row, int column)
+    {
+        ArrayList<int[]> deadNeighbors = new ArrayList<>();
+
+        boolean hasTop = row > 0; // a higher row exists
+        boolean hasBottom = row < board.length; // a lower row exists
+        boolean hasLeft = column > 0; // a left column exists
+        boolean hasRight = column < board[0].length; // a right column exists
+
+        if (hasTop) {
+            // check if cell directly above current cell is dead
+            if (board[row-1][column] == 0)
+                deadNeighbors.add(new int[]{row-1, column});
+            if (hasLeft) {
+                // check if diagonal upper left cell is dead
+                if (board[row-1][column-1] == 0)
+                    deadNeighbors.add(new int[] {row-1, column-1});
+            }
+            if (hasRight) {
+                // check if diagonal upper right cell is dead
+                if (board[row-1][column+1] == 0)
+                    deadNeighbors.add(new int[] {row-1, column+1});
+            }
+        }
+        if (hasBottom) {
+            // check if cell directly below current cell is dead
+            if (board[row+1][column] == 0)
+                deadNeighbors.add(new int[]{row+1, column});
+            if (hasLeft) {
+                // check if diagonal lower left cell is dead
+                if (board[row+1][column-1] == 0)
+                    deadNeighbors.add(new int[] {row+1, column-1});
+            }
+            if (hasRight) {
+                // check if diagonal lower right cell is dead
+                if (board[row+1][column+1] == 0)
+                    deadNeighbors.add(new int[] {row+1, column+1});
+            }
+        }
+        if (hasLeft) {
+            // check if adjacent left cell is dead
+            if (board[row][column-1] == 0)
+                deadNeighbors.add(new int[] {row, column-1});
+        }
+        if (hasRight) {
+            // check if adjacent right cell is dead
+            if (board[row][column+1] == 0)
+                deadNeighbors.add(new int[] {row, column+1});
+        }
+
+        return deadNeighbors;
     }
 
     // method to display current generation
@@ -59,8 +181,19 @@ public class Grid {
     public String toString()
     {
         String gridString = "";
-        // traverse grid
-        // add each row to string
+
+        for (int i=0; i<board.length; i++)
+        {
+            for (int j=0; j<board[i].length; j++)
+            {
+                if (board[i][j] == 0)
+                    gridString += "0 ";
+                else
+                    gridString += "1 ";
+            }
+            gridString += "\n";
+        }
+
         return gridString;
     }
 }
