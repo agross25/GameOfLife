@@ -4,16 +4,22 @@ package org.example;
 // then press Enter. You can now see whitespace characters in your code.
 public class Main {
     public static void main(String[] args) {
-        // Press Opt+Enter with your caret at the highlighted text to see how
-        // IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+        // Game Of Life Rules:
+        /*
+        * Alive with 1 or 0 neighbors -> dies
+        * Alive with 2 or 3 neighbors -> lives
+        * Alive with 4+ neighbors -> dies
+        * Dead with 3+ neighbors -> comes alive
+        *
+        *
+        * Grid class:
+        *   - Grid object:
+        *       -- 2D array representing game board
+        *       -- width attribute
+        *       -- height attribute
+        *   - .nextGen() produces the next generation - changes 2D array
+        *   - .toString() displays the grid in its current state
+        */
 
-        // Press Ctrl+R or click the green arrow button in the gutter to run the code.
-        for (int i = 1; i <= 5; i++) {
-
-            // Press Ctrl+D to start debugging your code. We have set one breakpoint
-            // for you, but you can always add more by pressing Cmd+F8.
-            System.out.println("i = " + i);
-        }
     }
 }
