@@ -38,9 +38,10 @@ public class Grid {
             for (int j=0; j<board[i].length; j++)
             {
                 int cell = board[i][j];
-                // if cell is alive, check for 2-3 neighbors
+                // if cell is alive, check status of neighbors
                 if (cell == 1)
                 {
+                    // identify all live neighbors
                     int liveNeighbors = findLiveNeighbors(i, j);
                     // will die if it does not have 2 or 3 neighbors (1 or less, 4 or more)
                     if (liveNeighbors != 2 && liveNeighbors != 3)
@@ -53,9 +54,18 @@ public class Grid {
                     // loop through all dead cells, check if they have 3+ neighbors
                     for (int[] deadCell : deadNeighbors)
                     {
-                        if (findLiveNeighbors(deadCell[0], deadCell[1]) >= 3) {
-                            if (!cellsToComeAlive.contains(deadCell))
+                        boolean alreadyUsed = false;
+                        for (int[] c : cellsToComeAlive)
+                        {
+                            if (c[0]==deadCell[0] && c[1]==deadCell[1])
+                                alreadyUsed = true;
+                        }
+                        if (!alreadyUsed)
+                        {
+                            // add to cellsToComeAlive if not already there
+                            if (findLiveNeighbors(deadCell[0], deadCell[1]) == 3)
                                 cellsToComeAlive.add(deadCell);
+                            // can be optimized by tracking which cells were already checked
                         }
                     }
                 }
@@ -128,9 +138,9 @@ public class Grid {
         ArrayList<int[]> deadNeighbors = new ArrayList<>();
 
         boolean hasTop = row > 0; // a higher row exists
-        boolean hasBottom = row < board.length; // a lower row exists
+        boolean hasBottom = row < board.length-1; // a lower row exists
         boolean hasLeft = column > 0; // a left column exists
-        boolean hasRight = column < board[0].length; // a right column exists
+        boolean hasRight = column < board[0].length-1; // a right column exists
 
         if (hasTop) {
             // check if cell directly above current cell is dead
@@ -187,9 +197,9 @@ public class Grid {
             for (int j=0; j<board[i].length; j++)
             {
                 if (board[i][j] == 0)
-                    gridString += "0 ";
+                    gridString += "- ";
                 else
-                    gridString += "1 ";
+                    gridString += "* ";
             }
             gridString += "\n";
         }
