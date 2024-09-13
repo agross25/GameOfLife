@@ -36,6 +36,7 @@ public class Grid {
     public void nextGen() {
         ArrayList<int[]> cellsToDie = new ArrayList<>();
         ArrayList<int[]> cellsToComeAlive = new ArrayList<>();
+        ArrayList<int[]> checkedDeadCells = new ArrayList<>();
 
         // traverse the entire 2D array to identify all living cells
         for (int i = 0; i < board.length; i++) {
@@ -54,18 +55,13 @@ public class Grid {
                     ArrayList<int[]> deadNeighbors = findDeadNeighbors(i, j);
                     // loop through all dead cells, check if they have 3+ neighbors
                     for (int[] deadCell : deadNeighbors) {
-                        boolean alreadyUsed = false;
-                        for (int[] c : cellsToComeAlive) {
-                            if (c[0] == deadCell[0] && c[1] == deadCell[1]) {
-                                alreadyUsed = true;
-                            }
-                        }
-                        if (!alreadyUsed) {
-                            // add to cellsToComeAlive if not already there
+                        if (!checkedDeadCells.contains(deadCell)) {
+                            // add to checkedDeadCells to avoid getting checked again
+                            checkedDeadCells.add(deadCell);
+                            // add to cellsToComeAlive if it has 3 live neighbors
                             if (findLiveNeighbors(deadCell[0], deadCell[1]) == 3) {
                                 cellsToComeAlive.add(deadCell);
                             }
-                            // can be optimized by tracking which cells were already checked
                         }
                     }
                 }
@@ -192,7 +188,7 @@ public class Grid {
             }
             gridSb.append("\n");
         }
-        
+
         return gridSb.toString();
     }
 }
