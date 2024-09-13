@@ -95,17 +95,13 @@ public class Grid {
             if (board[row - 1][column] == 1) {
                 liveNeighbors++;
             }
-            if (hasLeft) {
-                // check if diagonal upper left cell is alive
-                if (board[row - 1][column - 1] == 1) {
-                    liveNeighbors++;
-                }
+            // check if diagonal upper left cell is alive
+            if (hasLeft && board[row - 1][column - 1] == 1) {
+                liveNeighbors++;
             }
-            if (hasRight) {
-                // check if diagonal upper right cell is alive
-                if (board[row - 1][column + 1] == 1) {
-                    liveNeighbors++;
-                }
+            // check if diagonal upper right cell is alive
+            if (hasRight && board[row - 1][column + 1] == 1) {
+                liveNeighbors++;
             }
         }
         if (hasBottom) {
@@ -113,32 +109,23 @@ public class Grid {
             if (board[row + 1][column] == 1) {
                 liveNeighbors++;
             }
-            if (hasLeft) {
-                // check if diagonal lower left cell is alive
-                if (board[row + 1][column - 1] == 1) {
-                    liveNeighbors++;
-                }
+            // check if diagonal lower left cell is alive
+            if (hasLeft && board[row + 1][column - 1] == 1) {
+                liveNeighbors++;
             }
-            if (hasRight) {
-                // check if diagonal lower right cell is alive
-                if (board[row + 1][column + 1] == 1) {
-                    liveNeighbors++;
-                }
-            }
-        }
-        if (hasLeft) {
-            // check if adjacent left cell is alive
-            if (board[row][column - 1] == 1) {
+            // check if diagonal lower right cell is alive
+            if (hasRight && board[row + 1][column + 1] == 1) {
                 liveNeighbors++;
             }
         }
-        if (hasRight) {
-            // check if adjacent right cell is alive
-            if (board[row][column + 1] == 1) {
-                liveNeighbors++;
-            }
+        // check if adjacent left cell is alive
+        if (hasLeft && board[row][column - 1] == 1) {
+            liveNeighbors++;
         }
-
+        // check if adjacent right cell is alive
+        if (hasRight && board[row][column + 1] == 1) {
+            liveNeighbors++;
+        }
         return liveNeighbors;
     }
 
@@ -155,17 +142,13 @@ public class Grid {
             if (board[row - 1][column] == 0) {
                 deadNeighbors.add(new int[]{row - 1, column});
             }
-            if (hasLeft) {
-                // check if diagonal upper left cell is dead
-                if (board[row - 1][column - 1] == 0) {
-                    deadNeighbors.add(new int[]{row - 1, column - 1});
-                }
+            // check if diagonal upper left cell is dead
+            if (hasLeft && board[row - 1][column - 1] == 0) {
+                deadNeighbors.add(new int[]{row - 1, column - 1});
             }
-            if (hasRight) {
-                // check if diagonal upper right cell is dead
-                if (board[row - 1][column + 1] == 0) {
-                    deadNeighbors.add(new int[]{row - 1, column + 1});
-                }
+            // check if diagonal upper right cell is dead
+            if (hasRight && board[row - 1][column + 1] == 0) {
+                deadNeighbors.add(new int[]{row - 1, column + 1});
             }
         }
         if (hasBottom) {
@@ -173,30 +156,22 @@ public class Grid {
             if (board[row + 1][column] == 0) {
                 deadNeighbors.add(new int[]{row + 1, column});
             }
-            if (hasLeft) {
-                // check if diagonal lower left cell is dead
-                if (board[row + 1][column - 1] == 0) {
-                    deadNeighbors.add(new int[]{row + 1, column - 1});
-                }
+            // check if diagonal lower left cell is dead
+            if (hasLeft && board[row + 1][column - 1] == 0) {
+                deadNeighbors.add(new int[]{row + 1, column - 1});
             }
-            if (hasRight) {
-                // check if diagonal lower right cell is dead
-                if (board[row + 1][column + 1] == 0) {
-                    deadNeighbors.add(new int[]{row + 1, column + 1});
-                }
+            // check if diagonal lower right cell is dead
+            if (hasRight && board[row + 1][column + 1] == 0) {
+                deadNeighbors.add(new int[]{row + 1, column + 1});
             }
         }
-        if (hasLeft) {
-            // check if adjacent left cell is dead
-            if (board[row][column - 1] == 0) {
-                deadNeighbors.add(new int[]{row, column - 1});
-            }
+        // check if adjacent left cell is dead
+        if (hasLeft && board[row][column - 1] == 0) {
+            deadNeighbors.add(new int[]{row, column - 1});
         }
-        if (hasRight) {
-            // check if adjacent right cell is dead
-            if (board[row][column + 1] == 0) {
-                deadNeighbors.add(new int[]{row, column + 1});
-            }
+        // check if adjacent right cell is dead
+        if (hasRight && board[row][column + 1] == 0) {
+            deadNeighbors.add(new int[]{row, column + 1});
         }
 
         return deadNeighbors;
@@ -217,8 +192,7 @@ public class Grid {
             }
             gridSb.append("\n");
         }
-
-        String gridString = gridSb.toString();
-        return gridString;
+        
+        return gridSb.toString();
     }
 }
