@@ -4,8 +4,12 @@ import gross.gameoflife.Grid;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class GridFrame extends JFrame {
+
+    private static Timer timer;
 
     public GridFrame() {
         setSize(800, 600);
@@ -34,9 +38,18 @@ public class GridFrame extends JFrame {
         GridComponent gridComponent = new GridComponent(gameGrid);
         pane.add(gridComponent, BorderLayout.CENTER);
         // - add action Listeners for buttons and clicking of any square
-        // - use a timer for playing - every second, board updated
         // Component 3 - LINE_START (left)
         // Component 4 - LINE_END (right)
+
+        // Create a Timer that calls a method every second (1000 milliseconds)
+        timer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // This method will be called every second
+                gameGrid.nextGen();
+            }
+        });
+
 
         JButton play = new JButton("\u25B6"); // Unicode play symbol
         play.setPreferredSize(new Dimension(100, 45));
@@ -53,6 +66,25 @@ public class GridFrame extends JFrame {
         buttonPanel.add(pause);
 
         pane.add(buttonPanel, BorderLayout.PAGE_END);
+
+        // add action listeners for buttons
+        play.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!timer.isRunning()) {
+                    timer.start();
+                }
+            }
+        });
+
+        pause.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (timer.isRunning()) {
+                    timer.stop();
+                }
+            }
+        });
 
     }
 
