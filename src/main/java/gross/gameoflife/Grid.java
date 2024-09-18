@@ -11,6 +11,18 @@ public class Grid {
         board = new int[height][width];
     }
 
+    public int getCellStatus(int row, int column) {
+        return board[row][column];
+    }
+
+    public int getHeight() {
+        return board[0].length;
+    }
+
+    public int getWidth() {
+        return board.length;
+    }
+
     // method to set a living cell
     public void setCellAlive(int row, int column) {
         if (row >= board.length || column >= board[row].length) {
