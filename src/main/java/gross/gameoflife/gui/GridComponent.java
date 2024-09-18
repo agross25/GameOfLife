@@ -1,6 +1,6 @@
 package gross.gameoflife.gui;
 
-import gross.gameoflife.Grid;
+import gross.gameoflife.grid.Grid;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,13 +10,12 @@ import java.awt.event.MouseMotionListener;
 
 public class GridComponent extends JComponent {
 
-    private static Grid gameGrid;
+    private Grid gameGrid;
 
     public GridComponent(Grid grid) {
         this.gameGrid = grid;
 
         Timer timer = new Timer(10, e -> repaint());
-        timer.start();
 
         addMouseListener(new MouseListener() {
             @Override
@@ -31,6 +30,7 @@ public class GridComponent extends JComponent {
                 {
                     grid.setCellDead(row, column);
                 }
+                repaint();
             }
 
             @Override
@@ -82,7 +82,5 @@ public class GridComponent extends JComponent {
                 }
             }
         }
-        repaint();
-
     }
 }

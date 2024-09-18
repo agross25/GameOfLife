@@ -1,4 +1,4 @@
-package gross.gameoflife;
+package gross.gameoflife.grid;
 
 import java.util.ArrayList;
 

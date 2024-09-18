@@ -1,6 +1,6 @@
 package gross.gameoflife.gui;
 
-import gross.gameoflife.Grid;
+import gross.gameoflife.grid.Grid;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,7 +9,7 @@ import java.awt.event.ActionListener;
 
 public class GridFrame extends JFrame {
 
-    private static Timer timer;
+    private Timer timer;
 
     public GridFrame() {
         setSize(800, 600);
@@ -47,6 +47,7 @@ public class GridFrame extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // This method will be called every second
                 gameGrid.nextGen();
+                gridComponent.repaint();
             }
         });
 
