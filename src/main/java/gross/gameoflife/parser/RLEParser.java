@@ -34,14 +34,11 @@ public class RLEParser {
         rleText = clean(rleText);
 
         // Identify header and cell text
-        String header = new String(), cellText = new String();
-        for (int i = 0; i < rleText.size(); i++) {
-            String str = rleText.get(i).toLowerCase(); // in case of accidental capital X
-            if (str.startsWith("x =")) {
-                header = str;
-                cellText = rleText.get(i + 1);
-                break;
-            }
+        int headerIndex = getHeaderIndex(rleText);
+        String header = rleText.get(headerIndex);
+        String cellText = new String();
+        for (int i = headerIndex + 1; i < rleText.size(); i++) {
+            cellText += rleText.get(i);
         }
 
         // Retrieve dimensions based on header - [height, width]
@@ -62,35 +59,34 @@ public class RLEParser {
 //        String b = "b"; // dead cell
 //        String $ = "$"; // new line
 
-        String[] gridRows = cellText.split("$");
+        String[] gridRows = cellText.split("\\$");
+        System.out.println("Rows: " + gridRows.length);
 
         System.out.println("Cell Pattern:");
         for (int row = 0; row < gridRows.length; row++) {
             String nextLine = gridRows[row];
-            System.out.println(nextLine);
-            int column = 0;
+            System.out.println("Line: " + nextLine);
             // Uses regex to find integers
             Pattern pattern = Pattern.compile("\\d+");
 
-            while (column < newGrid.getWidth()) {
+            for (int column = 0; column < dimensions[1]; column++) {
                 Matcher matcher = pattern.matcher(nextLine);
+                int num = 0;
                 if (matcher.find() && matcher.start() == 0) // if the integer is at the first index of the line
                 {
-                    int num = Integer.parseInt(matcher.group());
-                    nextLine = nextLine.substring(matcher.end() + 1); // remove from line
-                    System.out.println(num);
-                } else {
-                    // Isolate the next character and identify its meaning
-                    String symbol = nextLine.substring(0, 1);
-                    nextLine = nextLine.substring(1); // remove from line
-                    System.out.println(symbol);
+                    num = Integer.parseInt(matcher.group());
+                    nextLine = nextLine.substring(matcher.end()); // remove from line
+                    System.out.println("Number: " + num);
+                    System.out.println("New Line: " + nextLine);
                 }
-                column++;
+                // Isolate the next character and identify its meaning
+                Character symbol = nextLine.charAt(0);
+                System.out.println(symbol);
+                nextLine = nextLine.substring(1); // remove from line
             }
         }
+        System.out.println("Done.");
 
-        for (String str : message)
-            System.out.println(str);
     }
 
     public ArrayList<String> getText() {
@@ -120,6 +116,18 @@ public class RLEParser {
         }
 
         return cleanTxt;
+    }
+
+    public int getHeaderIndex(ArrayList<String> rleText) {
+        int index = 0;
+        for (int i = 0; i < rleText.size(); i++) {
+            String str = rleText.get(i).toLowerCase(); // in case of accidental capital X
+            if (str.startsWith("x =")) {
+                index = i;
+                break;
+            }
+        }
+        return index;
     }
 
     public int[] findDimensions(String header) {
