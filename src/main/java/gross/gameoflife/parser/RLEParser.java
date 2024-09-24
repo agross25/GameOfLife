@@ -12,8 +12,10 @@ import java.util.regex.Pattern;
 
 public class RLEParser {
 
-    String filepath;
-    BufferedReader reader;
+    private String filepath;
+    private BufferedReader reader;
+    private Grid newGrid;
+
 
     // Constructor
     public RLEParser(String pathname) {
@@ -23,6 +25,7 @@ public class RLEParser {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
+        newGrid = new Grid(0, 0);
     }
 
     // Main method for parsing - calls other methods
@@ -51,38 +54,49 @@ public class RLEParser {
         }
 
         // Create new grid of the specified dimensions and print
-        Grid newGrid = new Grid(dimensions[0], dimensions[1]);
+        newGrid = new Grid(dimensions[0], dimensions[1]);
         System.out.println("\nDimensions: " + dimensions[0] + " X " + dimensions[1]);
-
-        // Parse line cell patterns into ArrayList
-//        String o = "o"; // live cell
-//        String b = "b"; // dead cell
-//        String $ = "$"; // new line
+        System.out.println(cellText);
+        System.out.println(newGrid.toString());
 
         String[] gridRows = cellText.split("\\$");
-        System.out.println("Rows: " + gridRows.length);
 
-        System.out.println("Cell Pattern:");
         for (int row = 0; row < gridRows.length; row++) {
             String nextLine = gridRows[row];
-            System.out.println("Line: " + nextLine);
             // Uses regex to find integers
             Pattern pattern = Pattern.compile("\\d+");
+            int column = -1; // tracks which column in the grid we are up to
 
-            for (int column = 0; column < dimensions[1]; column++) {
+            // Parse out all characters from each line
+            for (int i = 0; i < nextLine.length(); i++) {
                 Matcher matcher = pattern.matcher(nextLine);
-                int num = 0;
+                int numCells = 1;
                 if (matcher.find() && matcher.start() == 0) // if the integer is at the first index of the line
                 {
-                    num = Integer.parseInt(matcher.group());
+                    numCells = Integer.parseInt(matcher.group());
                     nextLine = nextLine.substring(matcher.end()); // remove from line
-                    System.out.println("Number: " + num);
-                    System.out.println("New Line: " + nextLine);
+                    i = 0; // start from the beginning again in case number is 2+ digits
                 }
                 // Isolate the next character and identify its meaning
                 Character symbol = nextLine.charAt(0);
-                System.out.println(symbol);
-                nextLine = nextLine.substring(1); // remove from line
+
+                // Set cells alive
+                int runs = column + numCells; // will always run at least once
+                while (column < runs) {
+                    column++;
+                    if (symbol == 'o') {
+                        newGrid.setCellAlive(row, column);
+                    } else if (symbol == '!') {
+                        i = nextLine.length(); // cuts out any text that may accidentally come after the !
+                        break;
+                    }
+                }
+                if (nextLine.length() > 1) {
+                    nextLine = nextLine.substring(1); // remove from line
+                } else {
+                    nextLine = "";
+                }
+                i--;
             }
         }
         System.out.println("Done.");
@@ -130,6 +144,10 @@ public class RLEParser {
         return index;
     }
 
+    public void printGrid() {
+        System.out.println(newGrid.toString());
+    }
+
     public int[] findDimensions(String header) {
         // Declare dimensions array and strings to hold height and width expressions
         int[] dimens = new int[2];
@@ -169,6 +187,8 @@ public class RLEParser {
         String pathname = "/Users/adinagross/Library/Mobile Documents/com~apple~CloudDocs/Touro/MCON/MCON357-Practicum_in_Software_Dev/GameOfLife/RLEfiles/1beacon.rle";
         RLEParser parser = new RLEParser(pathname);
         parser.parseFile();
+        System.out.println("\nGrid:");
+        parser.printGrid();
     }
 
 }
