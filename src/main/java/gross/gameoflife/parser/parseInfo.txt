@@ -1,0 +1,43 @@
+RLE Parse Object
+
+1. Header: provides height and weight of pattern
+    x = m, y = n
+      - m is the height
+      - n is the weight
+- sometimes the header includes rule = ___ following previous statement
+
+2. Pattern encoded as <run_count><tag>
+    <run_count> is the number of occurences of <tag>
+       - if <run_count> = 1, it can be omitted
+    <tag> is either b, o, $
+       - b = dead cell, o = live cell, $ = end of line
+- organized by ROW order, left to right
+
+
+- the last <run_count><tag> item is followed by an ! to signal the end of the pattern
+- dead cells at the end are not encoded, so we can assume all cells after the ! are dead
+
+Types of lines that precede the header:
+  - #C or #c = comment
+  - #N = pattern name
+  - #O = says author and date of file creation
+  - #P or #R = coordinates of top-left corner of pattern (usually negative, left of origin)
+  - #r = rules for the pattern
+
+  - - - - - - - - - - - - - - - - - - - - - -
+
+Example: Glider RLE format
+    #C This is a glider.           - * -
+    x = 3, y = 3                   - - *
+    bo$2bo$3o!                     * * *
+
+This means:
+- Column 1:
+    b - 1 dead cell
+    o - 1 live cell
+- Column 2:
+    2b - 2 dead cells
+    o - 1 live cell
+- Column 3:
+    3o - 3 live cells
+End
