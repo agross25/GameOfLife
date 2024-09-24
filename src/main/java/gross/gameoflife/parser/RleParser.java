@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class RLEParser {
+public class RleParser {
 
     private String filepath;
     private BufferedReader reader;
@@ -18,7 +18,7 @@ public class RLEParser {
 
 
     // Constructor
-    public RLEParser(String pathname) {
+    public RleParser(String pathname) {
         filepath = pathname;
         try {
             reader = new BufferedReader(new FileReader(filepath));
@@ -149,7 +149,8 @@ public class RLEParser {
     public int[] findDimensions(String header, Pattern pattern, Matcher matcher) {
         // Declare dimensions array and strings to hold height and width expressions
         int[] dimens = new int[2];
-        String x, y;
+        String x;
+        String y;
 
         if (!header.isEmpty()) {
             // Find indices of x, y, and comma(s)
