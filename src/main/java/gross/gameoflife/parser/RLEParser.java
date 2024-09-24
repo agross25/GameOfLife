@@ -30,6 +30,10 @@ public class RLEParser {
 
     // Main method for parsing - calls other methods
     public void parseFile() {
+        // Create Pattern and Matcher for Regular Expressions
+        Pattern pattern = Pattern.compile("\\d+");
+        Matcher matcher = null;
+
         // Access text from file
         ArrayList<String> rleText = this.getText();
 
@@ -40,12 +44,13 @@ public class RLEParser {
         int headerIndex = getHeaderIndex(rleText);
         String header = rleText.get(headerIndex);
         String cellText = new String();
+        // Copies all lines after header since cell pattern sometimes spans multiple lines
         for (int i = headerIndex + 1; i < rleText.size(); i++) {
             cellText += rleText.get(i);
         }
 
-        // Retrieve dimensions based on header - [height, width]
-        int[] dimensions = findDimensions(header);
+        // Retrieve dimensions based on header info - [height, width]
+        int[] dimensions = findDimensions(header, pattern, matcher);
 
         // Account for errors in RLE file
         if (dimensions == null) {
@@ -55,21 +60,16 @@ public class RLEParser {
 
         // Create new grid of the specified dimensions and print
         newGrid = new Grid(dimensions[0], dimensions[1]);
-        System.out.println("\nDimensions: " + dimensions[0] + " X " + dimensions[1]);
-        System.out.println(cellText);
-        System.out.println(newGrid.toString());
-
+        // Create array of Strings representing rows of grid
         String[] gridRows = cellText.split("\\$");
 
         for (int row = 0; row < gridRows.length; row++) {
             String nextLine = gridRows[row];
-            // Uses regex to find integers
-            Pattern pattern = Pattern.compile("\\d+");
             int column = -1; // tracks which column in the grid we are up to
 
             // Parse out all characters from each line
             for (int i = 0; i < nextLine.length(); i++) {
-                Matcher matcher = pattern.matcher(nextLine);
+                matcher = pattern.matcher(nextLine);
                 int numCells = 1;
                 if (matcher.find() && matcher.start() == 0) // if the integer is at the first index of the line
                 {
@@ -77,10 +77,10 @@ public class RLEParser {
                     nextLine = nextLine.substring(matcher.end()); // remove from line
                     i = 0; // start from the beginning again in case number is 2+ digits
                 }
-                // Isolate the next character and identify its meaning
+                // Isolate the next character and identify it
                 Character symbol = nextLine.charAt(0);
 
-                // Set cells alive
+                // Set cells alive if symbol is o
                 int runs = column + numCells; // will always run at least once
                 while (column < runs) {
                     column++;
@@ -99,8 +99,6 @@ public class RLEParser {
                 i--;
             }
         }
-        System.out.println("Done.");
-
     }
 
     public ArrayList<String> getText() {
@@ -118,7 +116,7 @@ public class RLEParser {
 
     public ArrayList<String> clean(ArrayList<String> txt) {
         ArrayList<String> cleanTxt = new ArrayList<>();
-        // Identify the index before header begins
+        // Identify the index of the header by skipping lines beginning with #
         int index = 0;
         while (txt.get(index).startsWith("#")) {
             index++;
@@ -148,10 +146,10 @@ public class RLEParser {
         System.out.println(newGrid.toString());
     }
 
-    public int[] findDimensions(String header) {
+    public int[] findDimensions(String header, Pattern pattern, Matcher matcher) {
         // Declare dimensions array and strings to hold height and width expressions
         int[] dimens = new int[2];
-        String x = new String(), y = new String();
+        String x, y;
 
         if (!header.isEmpty()) {
             // Find indices of x, y, and comma(s)
@@ -169,9 +167,7 @@ public class RLEParser {
             System.out.println("Error with dimension input.");
             return null;
         }
-        // Regular expression vars to find a number in the string
-        Pattern pattern = Pattern.compile("\\d+");
-        Matcher matcher;
+
         // Find integer values of x and y using regex
         String[] dimenStr = {x, y};
         for (int i = 0; i < 2; i++) {
@@ -181,14 +177,6 @@ public class RLEParser {
             }
         }
         return dimens;
-    }
-
-    public static void main(String[] args) {
-        String pathname = "/Users/adinagross/Library/Mobile Documents/com~apple~CloudDocs/Touro/MCON/MCON357-Practicum_in_Software_Dev/GameOfLife/RLEfiles/1beacon.rle";
-        RLEParser parser = new RLEParser(pathname);
-        parser.parseFile();
-        System.out.println("\nGrid:");
-        parser.printGrid();
     }
 
 }
