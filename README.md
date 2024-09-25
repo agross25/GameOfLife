@@ -82,7 +82,3 @@ allowing the user to click cells on and off and interchange them between dead an
 
 In order to run the project, import the above classes and create a new GridFrame.
 Set it to visible and watch the magic happen!
-
-# Screenshot
-
-<img width="801" alt="GameOfLifeScreenshot" src="https://github.com/user-attachments/assets/2c3231d0-5764-4fbd-b3e9-cdb526c580fc">
