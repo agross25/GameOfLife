@@ -1,4 +1,4 @@
-package gross.gameoflife;
+package gross.gameoflife.grid;
 
 import java.util.ArrayList;
 
@@ -9,6 +9,18 @@ public class Grid {
     // grid constructor
     public Grid(int height, int width) {
         board = new int[height][width];
+    }
+
+    public int getCellStatus(int row, int column) {
+        return board[row][column];
+    }
+
+    public int getHeight() {
+        return board[0].length;
+    }
+
+    public int getWidth() {
+        return board.length;
     }
 
     // method to set a living cell
