@@ -2,26 +2,33 @@ package gross.gameoflife.parser;
 
 import gross.gameoflife.grid.Grid;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RleParser {
 
-    private String filepath;
+    private File file;
     private BufferedReader reader;
     private Grid newGrid;
 
 
     // Constructor
     public RleParser(String pathname) {
-        filepath = pathname;
+        Path p = null;
         try {
-            reader = new BufferedReader(new FileReader(filepath));
+            p = Paths.get(ClassLoader.getSystemResource(pathname).toURI());
+            file = p.toFile();
+            // filepath = pathname;
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            reader = new BufferedReader(new FileReader(file));
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
