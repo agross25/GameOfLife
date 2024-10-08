@@ -11,7 +11,19 @@ public class GridFrame extends JFrame {
 
     private Timer timer;
 
+    // default constructor
     public GridFrame() {
+        Grid gameGrid = new Grid(300, 300);
+        setFrame(gameGrid);
+    }
+
+    // 2nd constructor
+    public GridFrame(int[][] grid) {
+        Grid gameGrid = new Grid(grid);
+        setFrame(gameGrid);
+    }
+
+    public void setFrame(Grid gameGrid) {
         setSize(800, 600);
         setTitle("Game of Life");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -32,8 +44,8 @@ public class GridFrame extends JFrame {
         title.setVerticalTextPosition(SwingConstants.CENTER);
         pane.add(title, BorderLayout.PAGE_START);
 
-        Grid gameGrid = new Grid(300, 300);
-        GridComponent gridComponent = new GridComponent(gameGrid);
+        Grid paddedGrid = calculateGrid(gameGrid);
+        GridComponent gridComponent = paddedGrid == null ? new GridComponent(gameGrid) : new GridComponent(paddedGrid);
         pane.add(gridComponent, BorderLayout.CENTER);
 
         // Create a Timer that calls a method every second (1000 milliseconds)
@@ -83,5 +95,33 @@ public class GridFrame extends JFrame {
 
     }
 
+    public Grid calculateGrid(Grid gameGrid) {
+        int[][] paddedGrid = null;
+
+        int height = gameGrid.getHeight();
+        int width = gameGrid.getWidth();
+        if (height < 100) {
+            if (width < 100) { // both height and width are below minimum
+                int hDiff = (100 - height) / 2;
+                int wDiff = (100 - width) / 2;
+                paddedGrid = new int[100][100];
+                // loop through and copy grid info over to this new one
+                for (int i = hDiff - 1; i < paddedGrid.length - wDiff - 1; i++) {
+                    // ----------------->>>
+                }
+            } else { // just height is below minimum
+                int hDiff = (100 - height) / 2;
+                paddedGrid = new int[100][width];
+            }
+        } else if (width < 100) // just width is below minimum
+        {
+            int wDiff = (100 - width) / 2;
+            paddedGrid = new int[height][100];
+        } else // grid dimensions are an adequate size as is
+        {
+            return null;
+        }
+        return new Grid(paddedGrid);
+    }
 
 }
