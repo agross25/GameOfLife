@@ -9,5 +9,7 @@ public class ParserTest {
         RleParser parser = new RleParser(pathname);
         parser.parseFile();
         parser.printGrid();
+
+
     }
 }

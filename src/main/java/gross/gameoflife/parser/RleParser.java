@@ -1,7 +1,5 @@
 package gross.gameoflife.parser;
 
-import gross.gameoflife.grid.Grid;
-
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -14,7 +12,7 @@ public class RleParser {
 
     private File file;
     private BufferedReader reader;
-    private Grid newGrid;
+    private int[][] newGrid;
 
 
     // Constructor
@@ -32,7 +30,7 @@ public class RleParser {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-        newGrid = new Grid(0, 0);
+        newGrid = new int[0][0];
     }
 
     // Main method for parsing - calls other methods
@@ -65,8 +63,8 @@ public class RleParser {
             System.exit(1);
         }
 
-        // Create new grid of the specified dimensions and print
-        newGrid = new Grid(dimensions[0], dimensions[1]);
+        // Create new grid of the specified dimensions
+        newGrid = new int[dimensions[0]][dimensions[1]];
         // Create array of Strings representing rows of grid
         String[] gridRows = cellText.split("\\$");
 
@@ -92,7 +90,7 @@ public class RleParser {
                 while (column < runs) {
                     column++;
                     if (symbol == 'o') {
-                        newGrid.setCellAlive(row, column);
+                        newGrid[row][column] = 1;
                     } else if (symbol == '!') {
                         i = nextLine.length(); // cuts out any text that may accidentally come after the !
                         break;
@@ -150,7 +148,20 @@ public class RleParser {
     }
 
     public void printGrid() {
-        System.out.println(newGrid.toString());
+        StringBuilder gridSb = new StringBuilder();
+
+        for (int i = 0; i < newGrid.length; i++) {
+            for (int j = 0; j < newGrid[i].length; j++) {
+                if (newGrid[i][j] == 0) {
+                    gridSb.append("- ");
+                } else {
+                    gridSb.append("* ");
+                }
+            }
+            gridSb.append("\n");
+        }
+
+        System.out.println(gridSb);
     }
 
     public int[] findDimensions(String header, Pattern pattern, Matcher matcher) {
