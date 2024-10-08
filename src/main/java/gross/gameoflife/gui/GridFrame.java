@@ -32,14 +32,9 @@ public class GridFrame extends JFrame {
         title.setVerticalTextPosition(SwingConstants.CENTER);
         pane.add(title, BorderLayout.PAGE_START);
 
-        // Component 2 - CENTER
-
         Grid gameGrid = new Grid(300, 300);
         GridComponent gridComponent = new GridComponent(gameGrid);
         pane.add(gridComponent, BorderLayout.CENTER);
-        // - add action Listeners for buttons and clicking of any square
-        // Component 3 - LINE_START (left)
-        // Component 4 - LINE_END (right)
 
         // Create a Timer that calls a method every second (1000 milliseconds)
         timer = new Timer(1000, new ActionListener() {
@@ -50,7 +45,6 @@ public class GridFrame extends JFrame {
                 gridComponent.repaint();
             }
         });
-
 
         JButton play = new JButton("\u25B6"); // Unicode play symbol
         play.setPreferredSize(new Dimension(100, 45));

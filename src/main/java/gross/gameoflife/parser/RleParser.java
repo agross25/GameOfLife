@@ -34,7 +34,7 @@ public class RleParser {
     }
 
     // Main method for parsing - calls other methods
-    public void parseFile() {
+    public int[][] parseFile() {
         // Create Pattern and Matcher for Regular Expressions
         Pattern pattern = Pattern.compile("\\d+");
         Matcher matcher = null;
@@ -104,6 +104,7 @@ public class RleParser {
                 i--;
             }
         }
+        return newGrid;
     }
 
     public ArrayList<String> getText() {
