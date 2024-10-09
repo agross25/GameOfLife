@@ -1,7 +1,10 @@
 package gross.gameoflife.parser;
 
-import java.io.*;
-import java.net.URISyntaxException;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -13,34 +16,57 @@ public class RleParser {
     private File file;
     private BufferedReader reader;
     private int[][] newGrid;
+    private ArrayList<String> rleText;
 
 
-    // Constructor
-    public RleParser(String pathname) {
-        Path p = null;
-        try {
-            p = Paths.get(ClassLoader.getSystemResource(pathname).toURI());
-            file = p.toFile();
-            // filepath = pathname;
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            reader = new BufferedReader(new FileReader(file));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+    // Constructor for filepath
+    public RleParser(String str) {
+        // If string is a filepath:
+        if (isValidPath(str)) {
+            try {
+                Path p = Paths.get(ClassLoader.getSystemResource(str).toURI());
+                file = p.toFile();
+                reader = new BufferedReader(new FileReader(file));
+                rleText = getText();
+            } catch (Exception e) {
+                file = null;
+                reader = null;
+            }
         }
         newGrid = new int[0][0];
     }
 
+    // Constructor for body of text / webpage text
+    public RleParser(ArrayList<String> text) {
+        rleText = text;
+    }
+
+    public boolean isValidPath(String path) {
+        try {
+            Path filePath = Paths.get(path);
+            return true;  // Path is syntactically correct
+        } catch (InvalidPathException e) {
+            return false;  // Invalid path
+        }
+    }
+
+    public boolean pathExists(String path) {
+        try {
+            Path p = Paths.get(ClassLoader.getSystemResource(path).toURI());
+            file = p.toFile();
+            reader = new BufferedReader(new FileReader(file));
+            return true; // Path is accessible
+        } catch (Exception e) {
+            return false; // Path does not exist or is inaccessible
+        }
+    }
+
     // Main method for parsing - calls other methods
     public int[][] parseFile() {
+
         // Create Pattern and Matcher for Regular Expressions
         Pattern pattern = Pattern.compile("\\d+");
         Matcher matcher = null;
-
-        // Access text from file
-        ArrayList<String> rleText = this.getText();
 
         // Eliminate comments above header
         rleText = clean(rleText);
@@ -59,8 +85,8 @@ public class RleParser {
 
         // Account for errors in RLE file
         if (dimensions == null) {
-            System.out.println("Input invalid.");
-            System.exit(1);
+            // System.out.println("Input invalid.");
+            return null;
         }
 
         // Create new grid of the specified dimensions

@@ -11,17 +11,29 @@ import java.awt.event.MouseMotionListener;
 public class GridComponent extends JComponent {
 
     private Grid gameGrid;
+    private int cellHeight;
+    private int cellWidth;
 
     public GridComponent(Grid grid) {
         this.gameGrid = grid;
+
+        cellHeight = getHeight() / gameGrid.getHeight();
+        cellWidth = getWidth() / gameGrid.getWidth();
+
+        if (cellHeight <= 0) {
+            cellHeight = 20;
+        }
+        if (cellWidth <= 0) {
+            cellWidth = 20;
+        }
 
         Timer timer = new Timer(10, e -> repaint());
 
         addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int row = e.getX() / 20;
-                int column = e.getY() / 20;
+                int row = e.getX() / cellHeight;
+                int column = e.getY() / cellWidth;
 
                 if (grid.getCellStatus(row, column) == 0) // if cell is dead
                 {
@@ -30,6 +42,7 @@ public class GridComponent extends JComponent {
                 {
                     grid.setCellDead(row, column);
                 }
+//                revalidate();
                 repaint();
             }
 
@@ -73,13 +86,16 @@ public class GridComponent extends JComponent {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, getWidth(), getHeight());
 
+
         for (int y = 0; y < gameGrid.getHeight(); y++) {
             for (int x = 0; x < gameGrid.getWidth(); x++) {
                 if (gameGrid.getCellStatus(x, y) == 1) // if cell is alive
                 {
                     g.setColor(Color.GREEN);
-                    g.fillRect(x * 20, y * 20, 20, 20);
+                    g.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
                 }
+                g.setColor(Color.GRAY); // draw gridlines
+                g.drawRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
             }
         }
     }
