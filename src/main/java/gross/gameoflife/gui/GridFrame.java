@@ -33,7 +33,7 @@ public class GridFrame extends JFrame {
 
     // default constructor
     public GridFrame() {
-        gameGrid = new Grid(300, 300);
+        gameGrid = new Grid(100, 100);
         gridComponent = new GridComponent(gameGrid);
         setFrame();
     }
@@ -280,25 +280,6 @@ public class GridFrame extends JFrame {
 
         paddedGrid = new int[height][width];
 
-//        else // height and weight are not equal
-//        {
-//            // find which dimension is larger and make the grid that size
-//            if (height > width) {
-//                paddedGrid = new int[height][height];
-//            } else // if width > height or width == height
-//            {
-//                paddedGrid = new int[width][width];
-//            }
-//        }
-
-        // loop through and copy grid content into paddedGrid
-//        for (int i = hDiff; i - hDiff < gameGrid.getHeight(); i++) {
-//            for (int j = wDiff; j - wDiff < gameGrid.getWidth(); j++) {
-//                if (gameGrid.getCellStatus(i - hDiff, j - wDiff) == 1) {
-//                    paddedGrid[i][j] = 1;
-//                }
-//            }
-//        }
         // Copy the original grid into the padded grid
         for (int i = 0; i < gameGrid.getHeight(); i++) {
             for (int j = 0; j < gameGrid.getWidth(); j++) {
