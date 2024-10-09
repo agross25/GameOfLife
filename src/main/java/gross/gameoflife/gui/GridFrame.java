@@ -17,6 +17,10 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -164,6 +168,7 @@ public class GridFrame extends JFrame {
                 boolean inputValid = false;
                 String clipboardText = "";
                 String errorMessage = "";
+                String successMessage = "";
 
                 // Try to retrieve text from the clipboard
                 try {
@@ -181,7 +186,12 @@ public class GridFrame extends JFrame {
                                     // create an RLE Parser with this text
                                     RleParser parser = new RleParser(text);
                                     grid = parser.parseFile();
-                                    inputValid = true;
+                                    if (grid == null) {
+                                        errorMessage = "Webpage provided is not in RLE format.";
+                                    } else {
+                                        inputValid = true;
+                                        successMessage = "Successfully parsed RLE webpage.";
+                                    }
                                 }
                             }
                             // Test if it is a body of text with valid RLE format
@@ -191,17 +201,30 @@ public class GridFrame extends JFrame {
                                 // create an RLE Parser with this text
                                 RleParser parser = new RleParser(text);
                                 grid = parser.parseFile();
-                                inputValid = true;
+                                if (grid == null) {
+                                    errorMessage = "Text provided is not in RLE format.";
+                                } else {
+                                    inputValid = true;
+                                    successMessage = "Successfully parsed RLE text.";
+                                }
                             }
-                            // Assume it is a file path
-                            else {
-                                // Create a Parser with this string - Parser will test if it is a valid file path
-                                RleParser parser = new RleParser(clipboardText);
-                                grid = parser.parseFile();
-                                inputValid = true;
+                            // Test if it is a file path
+                            else if (isValidPath(clipboardText)) {
+                                if (Files.exists(Paths.get(clipboardText))) {
+                                    RleParser parser = new RleParser(clipboardText);
+                                    grid = parser.parseFile();
+                                    if (grid == null) {
+                                        errorMessage = "File Path invalid or inaccessible.";
+                                    } else {
+                                        inputValid = true;
+                                        successMessage = "Successfully parsed RLE file.";
+                                    }
+                                } else {
+                                    errorMessage = "File Path invalid or inaccessible.";
+                                }
+                            } else { // If it does not meet any criteria
+                                errorMessage = "Input does not match any RLE format criteria.";
                             }
-                            // If it does not meet any criteria
-                            // use Regex to text if it is a valid URL, filepath, or RLE content.
                         } else {
                             errorMessage = "Empty or null string in clipboard.";
                         }
@@ -211,10 +234,10 @@ public class GridFrame extends JFrame {
                     // Respond based on input validity
                     if (inputValid) {
                         message.setForeground(Color.BLACK);
-                        message.setText(clipboardText);
-                        if (grid != null) {
-                            resetGrid(grid);
-                        }
+                        message.setText(successMessage);
+//                        if (grid != null) {
+//                            resetGrid(grid);
+//                        }
                     } else {
                         message.setForeground(Color.RED);
                         message.setText(errorMessage);
@@ -302,6 +325,15 @@ public class GridFrame extends JFrame {
         return false;
     }
 
+    public boolean isValidPath(String path) {
+        try {
+            Path filePath = Paths.get(path);
+            return true;  // Path exists and is accessible
+        } catch (InvalidPathException e) {
+            return false;  // Invalid path
+        }
+    }
+
     public ArrayList<String> parseURL(String url) {
         ArrayList<String> rleText = new ArrayList<>();
         try {
@@ -335,10 +367,13 @@ public class GridFrame extends JFrame {
                     endIndex = tempText.indexOf("x = ");
                 } else // if there are 2+ # symbols in the string
                 {
-                    endIndex = tempText.substring(startIndex + 1).indexOf("#"); // cut off starting #
+                    String tempStr = tempText.substring(startIndex + 1); // cut off first #
+                    endIndex = tempStr.indexOf("#") + 1; // get second #
+                    System.out.println(startIndex + " -> " + endIndex);
                 }
                 String line = tempText.substring(startIndex, endIndex);
                 tempText = tempText.substring(endIndex);
+                System.out.println(tempText);
                 rleText.add(line);
             }
         }
