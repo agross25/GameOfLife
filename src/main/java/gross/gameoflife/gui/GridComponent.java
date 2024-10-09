@@ -16,6 +16,7 @@ public class GridComponent extends JComponent {
 
     public GridComponent(Grid grid) {
         this.gameGrid = grid;
+        initMouseListener();
 
         cellHeight = getHeight() / gameGrid.getHeight();
         cellWidth = getWidth() / gameGrid.getWidth();
@@ -26,23 +27,28 @@ public class GridComponent extends JComponent {
         if (cellWidth <= 0) {
             cellWidth = 20;
         }
+    }
+    // Timer timer = new Timer(10, e -> repaint());
 
-        Timer timer = new Timer(10, e -> repaint());
-
+    private void initMouseListener() {
         addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                System.out.println("Mouse Clicked!");
+
                 int row = e.getX() / cellHeight;
                 int column = e.getY() / cellWidth;
 
-                if (grid.getCellStatus(row, column) == 0) // if cell is dead
+                System.out.println(row + ", " + column);
+
+                if (gameGrid.getCellStatus(row, column) == 0) // if cell is dead
                 {
-                    grid.setCellAlive(row, column);
+                    gameGrid.setCellAlive(row, column);
                 } else // if cell is alive
                 {
-                    grid.setCellDead(row, column);
+                    gameGrid.setCellDead(row, column);
                 }
-//                revalidate();
+                revalidate();
                 repaint();
             }
 
@@ -79,13 +85,25 @@ public class GridComponent extends JComponent {
         });
     }
 
+    public void setComponentGrid(Grid grid) {
+        this.gameGrid = grid;
+        removeMouseListeners();
+        initMouseListener();
+    }
+
+    // Remove existing mouse listeners to prevent duplication
+    private void removeMouseListeners() {
+        for (MouseListener listener : getMouseListeners()) {
+            removeMouseListener(listener);
+        }
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, getWidth(), getHeight());
-
 
         for (int y = 0; y < gameGrid.getHeight(); y++) {
             for (int x = 0; x < gameGrid.getWidth(); x++) {

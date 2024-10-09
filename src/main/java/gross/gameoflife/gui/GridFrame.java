@@ -29,25 +29,30 @@ public class GridFrame extends JFrame {
 
     private Timer timer;
     private Grid gameGrid;
+    private GridComponent gridComponent;
 
     // default constructor
     public GridFrame() {
         gameGrid = new Grid(300, 300);
-        setFrame(gameGrid);
+        gridComponent = new GridComponent(gameGrid);
+        setFrame();
     }
 
     // 2nd constructor
     public GridFrame(int[][] grid) {
         gameGrid = new Grid(grid);
-        setFrame(gameGrid);
+        gridComponent = new GridComponent(gameGrid);
+        setFrame();
     }
 
     public void resetGrid(int[][] grid) {
         gameGrid = new Grid(grid);
-        setFrame(gameGrid);
+        gridComponent.setComponentGrid(gameGrid); // Pass the updated grid to the existing GridComponent
+        gridComponent.repaint();
+        // setFrame();
     }
 
-    public void setFrame(Grid gameGrid) {
+    public void setFrame() {
         setSize(800, 700);
         setTitle("Game of Life");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -68,10 +73,11 @@ public class GridFrame extends JFrame {
         title.setVerticalTextPosition(SwingConstants.CENTER);
         pane.add(title, BorderLayout.PAGE_START);
 
-        Grid paddedGrid = calculateGrid(gameGrid);
+        //Grid paddedGrid = calculateGrid(gameGrid);
         // System.out.println(paddedGrid.toString());
-        GridComponent gridComponent = new GridComponent(paddedGrid);
-        // GridComponent gridComponent = new GridComponent(gameGrid);
+        //gridComponent.setComponentGrid(paddedGrid);
+        gameGrid = calculateGrid(gameGrid);
+        gridComponent.setComponentGrid(gameGrid);
         pane.add(gridComponent, BorderLayout.CENTER);
 
         // Create a Timer that calls a method every second (1000 milliseconds)
@@ -79,18 +85,11 @@ public class GridFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // This method will be called every second
-                System.out.println("Action!");
+                System.out.println("NextGen!");
                 gameGrid.nextGen();
                 gridComponent.repaint();
             }
         });
-
-        // Main Panel to contain whole bottom section
-        JPanel buttonPanel = new JPanel(new BorderLayout());
-
-        // Panels to contain other panels
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JPanel bottomCenterPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
         // Box Panel for RLE button and text area
         JPanel leftPanel = new JPanel();
@@ -108,11 +107,16 @@ public class GridFrame extends JFrame {
         message.setAlignmentX(Component.LEFT_ALIGNMENT);
         message.setLineWrap(true);
         message.setWrapStyleWord(true);
+
+        // Main Panel to contain whole bottom section
+        JPanel buttonPanel = new JPanel(new BorderLayout());
         message.setBackground(buttonPanel.getBackground());
 
         leftPanel.add(rleLoader);
         leftPanel.add(message);
 
+        // Panel to elements on left
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bottomPanel.add(leftPanel);
 
         // Play and Pause Buttons
@@ -125,7 +129,8 @@ public class GridFrame extends JFrame {
         play.setFont(largeFont);
         pause.setFont(largerFont);
 
-        // JPanels to hold the buttons
+        // Panel to hold the buttons
+        JPanel bottomCenterPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         bottomCenterPanel.add(play);
         bottomCenterPanel.add(pause);
 
@@ -141,7 +146,6 @@ public class GridFrame extends JFrame {
         play.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Play!");
                 if (!timer.isRunning()) {
                     timer.start();
                 }
@@ -151,7 +155,6 @@ public class GridFrame extends JFrame {
         pause.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Pause!");
                 if (timer.isRunning()) {
                     timer.stop();
                 }
@@ -180,8 +183,8 @@ public class GridFrame extends JFrame {
                         // Check if the clipboard text is not empty
                         if (clipboardText != null && !clipboardText.trim().isEmpty()) {
                             // Check if the clipboardText is in URL format and leads to content
-                            if (isValidAndAccessibleURL(clipboardText)) {
-                                ArrayList<String> text = parseURL(clipboardText);
+                            if (isValidAndAccessibleUrl(clipboardText)) {
+                                ArrayList<String> text = parseUrl(clipboardText);
                                 if (text != null) {
                                     // create an RLE Parser with this text
                                     RleParser parser = new RleParser(text);
@@ -231,13 +234,21 @@ public class GridFrame extends JFrame {
                     } else {
                         errorMessage = "No text found in clipboard.";
                     }
+
                     // Respond based on input validity
                     if (inputValid) {
                         message.setForeground(Color.BLACK);
                         message.setText(successMessage);
-//                        if (grid != null) {
-//                            resetGrid(grid);
-//                        }
+                        if (grid != null) {
+                            resetGrid(grid);
+                            // Update the displayed grid component with the new grid
+                            pane.remove(gridComponent); // Remove the old grid
+                            gridComponent.setComponentGrid(gameGrid); // Create a new grid component with the new grid
+                            pane.add(gridComponent, BorderLayout.CENTER); // Add the updated grid component
+                            pane.revalidate(); // Revalidate the panel to apply changes
+                            pane.repaint();    // Repaint the panel to reflect the new grid
+                            gridComponent.repaint();
+                        }
                     } else {
                         message.setForeground(Color.RED);
                         message.setText(errorMessage);
@@ -297,7 +308,7 @@ public class GridFrame extends JFrame {
         return new Grid(paddedGrid);
     }
 
-    public boolean isValidAndAccessibleURL(String urlString) {
+    public boolean isValidAndAccessibleUrl(String urlString) {
         try {
             URL url = new URL(urlString);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -334,7 +345,7 @@ public class GridFrame extends JFrame {
         }
     }
 
-    public ArrayList<String> parseURL(String url) {
+    public ArrayList<String> parseUrl(String url) {
         ArrayList<String> rleText = new ArrayList<>();
         try {
             // Connect to the URL and fetch the HTML content
@@ -369,11 +380,9 @@ public class GridFrame extends JFrame {
                 {
                     String tempStr = tempText.substring(startIndex + 1); // cut off first #
                     endIndex = tempStr.indexOf("#") + 1; // get second #
-                    System.out.println(startIndex + " -> " + endIndex);
                 }
                 String line = tempText.substring(startIndex, endIndex);
                 tempText = tempText.substring(endIndex);
-                System.out.println(tempText);
                 rleText.add(line);
             }
         }

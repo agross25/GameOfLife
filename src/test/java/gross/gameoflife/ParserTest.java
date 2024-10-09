@@ -11,10 +11,10 @@ public class ParserTest {
         int[][] grid = parser.parseFile();
 
         System.out.println("Figure 1");
-        parser.printGrid();
-
-        System.out.println("Figure 2");
         Grid board = new Grid(grid);
         System.out.println(board.toString());
+
+        System.out.println("Figure 2");
+        parser.printGrid();
     }
 }
