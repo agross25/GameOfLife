@@ -53,7 +53,7 @@ public class GridFrame extends JFrame {
     }
 
     public void setFrame() {
-        setSize(800, 700);
+        setSize(900, 900);
         setTitle("Game of Life");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -73,9 +73,6 @@ public class GridFrame extends JFrame {
         title.setVerticalTextPosition(SwingConstants.CENTER);
         pane.add(title, BorderLayout.PAGE_START);
 
-        //Grid paddedGrid = calculateGrid(gameGrid);
-        // System.out.println(paddedGrid.toString());
-        //gridComponent.setComponentGrid(paddedGrid);
         gameGrid = calculateGrid(gameGrid);
         gridComponent.setComponentGrid(gameGrid);
         pane.add(gridComponent, BorderLayout.CENTER);
@@ -85,7 +82,6 @@ public class GridFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // This method will be called every second
-                System.out.println("NextGen!");
                 gameGrid.nextGen();
                 gridComponent.repaint();
             }
@@ -269,39 +265,44 @@ public class GridFrame extends JFrame {
         int width = gameGrid.getWidth();
         int hDiff = 0;
         int wDiff = 0;
-        int min = 30;
+        int min = 100;
 
         // test whether height / width are below 100
+        // Determine the dimensions for the new padded grid
         if (height < min) {
-            if (width < min) { // both height and width are below minimum
-                hDiff = (min - height) / 2;
-                wDiff = (min - width) / 2;
-                paddedGrid = new int[min][min];
-            } else { // just height is below minimum -> set grid to width x width
-                hDiff = (width - height) / 2;
-                paddedGrid = new int[width][width];
-            }
-        } else if (width < min) // just width is below minimum -> set grid to height x height
-        {
-            wDiff = (height - width) / 2;
-            paddedGrid = new int[height][height];
-        } else // grid dimensions are an adequate size as is
-        {
-            // find which dimension is larger and make the grid that size
-            if (height > width) {
-                paddedGrid = new int[height][height];
-            } else // if width > height or width == height
-            {
-                paddedGrid = new int[width][width];
-            }
+            hDiff = (min - height) / 2;
+            height = min;
+        }
+        if (width < min) {
+            wDiff = (min - width) / 2;
+            width = min;
         }
 
+        paddedGrid = new int[height][width];
+
+//        else // height and weight are not equal
+//        {
+//            // find which dimension is larger and make the grid that size
+//            if (height > width) {
+//                paddedGrid = new int[height][height];
+//            } else // if width > height or width == height
+//            {
+//                paddedGrid = new int[width][width];
+//            }
+//        }
+
         // loop through and copy grid content into paddedGrid
-        for (int i = hDiff; i - hDiff < gameGrid.getHeight(); i++) {
-            for (int j = wDiff; j - wDiff < gameGrid.getWidth(); j++) {
-                if (gameGrid.getCellStatus(i - hDiff, j - wDiff) == 1) {
-                    paddedGrid[i][j] = 1;
-                }
+//        for (int i = hDiff; i - hDiff < gameGrid.getHeight(); i++) {
+//            for (int j = wDiff; j - wDiff < gameGrid.getWidth(); j++) {
+//                if (gameGrid.getCellStatus(i - hDiff, j - wDiff) == 1) {
+//                    paddedGrid[i][j] = 1;
+//                }
+//            }
+//        }
+        // Copy the original grid into the padded grid
+        for (int i = 0; i < gameGrid.getHeight(); i++) {
+            for (int j = 0; j < gameGrid.getWidth(); j++) {
+                paddedGrid[i + hDiff][j + wDiff] = gameGrid.getCellStatus(i, j);
             }
         }
 

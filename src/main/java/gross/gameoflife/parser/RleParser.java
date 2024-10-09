@@ -202,7 +202,7 @@ public class RleParser {
             // Isolate width statement
             y = header.substring(yIndex, comma2);
         } else {
-            System.out.println("Error with dimension input.");
+            // System.out.println("Error with dimension input.");
             return null;
         }
 
