@@ -28,6 +28,10 @@ public class Grid {
         return board[0].length;
     }
 
+    public int[][] getGrid() {
+        return board;
+    }
+
     // method to set a living cell
     public void setCellAlive(int row, int column) {
         if (row >= board.length || column >= board[row].length) {

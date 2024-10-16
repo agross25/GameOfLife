@@ -1,18 +1,15 @@
 package gross.gameoflife.parser;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RleParser {
 
-    private File file;
     private BufferedReader reader;
     private int[][] newGrid;
     private ArrayList<String> rleText;
@@ -22,12 +19,11 @@ public class RleParser {
     public RleParser(String str) {
         // If string is a filepath:
         try {
-            Path p = Paths.get(ClassLoader.getSystemResource(str).toURI());
-            file = p.toFile();
-            reader = new BufferedReader(new FileReader(file));
+            InputStream in = ClassLoader.getSystemResourceAsStream(str);
+            reader = new BufferedReader(new InputStreamReader(in));
             rleText = getText();
         } catch (Exception e) {
-            file = null;
+            e.printStackTrace();
             reader = null;
         }
         newGrid = new int[0][0];
@@ -36,17 +32,6 @@ public class RleParser {
     // Constructor for body of text / webpage text
     public RleParser(ArrayList<String> text) {
         rleText = text;
-    }
-
-    public boolean pathExists(String path) {
-        try {
-            Path p = Paths.get(ClassLoader.getSystemResource(path).toURI());
-            file = p.toFile();
-            reader = new BufferedReader(new FileReader(file));
-            return true; // Path is accessible
-        } catch (Exception e) {
-            return false; // Path does not exist or is inaccessible
-        }
     }
 
     // Main method for parsing - calls other methods
@@ -79,26 +64,35 @@ public class RleParser {
             }
 
             // Create new grid of the specified dimensions
-            newGrid = new int[dimensions[0]][dimensions[1]];
+            newGrid = new int[dimensions[1]][dimensions[0]];
             // Create array of Strings representing rows of grid
             String[] gridRows = cellText.toString().split("\\$");
+            int rowNum = 0; // will be used to access gridRow index
 
-            for (int row = 0; row < gridRows.length; row++) {
-                String nextLine = gridRows[row];
+            for (int row = 0; row < dimensions[1]; row++) {
+                String nextLine = gridRows[rowNum];
                 int column = -1; // tracks which column in the grid we are up to
 
                 // Parse out all characters from each line
                 for (int i = 0; i < nextLine.length(); i++) {
                     matcher = pattern.matcher(nextLine);
                     int numCells = 1;
+                    Character symbol = 'x';
                     if (matcher.find() && matcher.start() == 0) // if the integer is at the first index of the line
                     {
                         numCells = Integer.parseInt(matcher.group());
-                        nextLine = nextLine.substring(matcher.end()); // remove from line
+                        int endIndex = matcher.end();
+                        if (nextLine.length() > endIndex) {
+                            nextLine = nextLine.substring(endIndex); // remove from line
+                            symbol = nextLine.charAt(0); // isolate the next character and identify it
+                        } else {
+                            nextLine = "";
+                            symbol = '$';
+                        }
                         i = 0; // start from the beginning again in case number is 2+ digits
+                    } else if (nextLine.length() > 0) {
+                        symbol = nextLine.charAt(0);
                     }
-                    // Isolate the next character and identify it
-                    Character symbol = nextLine.charAt(0);
 
                     // Set cells alive if symbol is o
                     int runs = column + numCells; // will always run at least once
@@ -106,6 +100,9 @@ public class RleParser {
                         column++;
                         if (symbol == 'o') {
                             newGrid[row][column] = 1;
+                        } else if (symbol == '$') {
+                            row += (numCells - 1);
+                            break;
                         } else if (symbol == '!') {
                             i = nextLine.length(); // cuts out any text that may accidentally come after the !
                             break;
@@ -118,6 +115,7 @@ public class RleParser {
                     }
                     i--;
                 }
+                rowNum++;
             }
         } else {
             return null;
@@ -195,7 +193,7 @@ public class RleParser {
             int yIndex = header.indexOf("y");
             int comma1 = header.indexOf(",");
             // If there is a second comma, it is assigned into comma2. Otherwise, it is the end of the string.
-            int comma2 = header.lastIndexOf(",") > yIndex ? header.lastIndexOf(",") : header.length() - 1;
+            int comma2 = header.lastIndexOf(",") > yIndex ? header.lastIndexOf(",") : header.length();
 
             // Isolate height statement
             x = header.substring(xIndex, comma1);

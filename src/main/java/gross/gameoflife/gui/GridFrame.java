@@ -2,10 +2,7 @@ package gross.gameoflife.gui;
 
 import gross.gameoflife.grid.Grid;
 import gross.gameoflife.parser.RleParser;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import org.apache.commons.io.IOUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,6 +12,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
@@ -30,10 +28,11 @@ public class GridFrame extends JFrame {
     private Timer timer;
     private Grid gameGrid;
     private GridComponent gridComponent;
+    private final int MIN = 100;
 
     // default constructor
     public GridFrame() {
-        gameGrid = new Grid(100, 100);
+        gameGrid = new Grid(MIN, MIN);
         gridComponent = new GridComponent(gameGrid);
         setFrame();
     }
@@ -49,7 +48,6 @@ public class GridFrame extends JFrame {
         gameGrid = new Grid(grid);
         gridComponent.setComponentGrid(gameGrid); // Pass the updated grid to the existing GridComponent
         gridComponent.repaint();
-        // setFrame();
     }
 
     public void setFrame() {
@@ -77,8 +75,8 @@ public class GridFrame extends JFrame {
         gridComponent.setComponentGrid(gameGrid);
         pane.add(gridComponent, BorderLayout.CENTER);
 
-        // Create a Timer that calls a method every second (1000 milliseconds)
-        timer = new Timer(1000, new ActionListener() {
+        // Create a Timer that calls nextGen()
+        timer = new Timer(300, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // This method will be called every second
@@ -164,62 +162,56 @@ public class GridFrame extends JFrame {
                 int[][] grid = null;
 
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                boolean inputValid = false;
                 String clipboardText = "";
                 String errorMessage = "";
                 String successMessage = "";
 
-                // Try to retrieve text from the clipboard
                 try {
+                    // Try to retrieve clipboard content
                     Transferable content = clipboard.getContents(null);
-
-                    // Retrieve clipboard text
                     if (content != null && content.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                         clipboardText = (String) content.getTransferData(DataFlavor.stringFlavor);
-                        // Check if the clipboard text is not empty
+
+                        // Check that the clipboard text is not empty
                         if (clipboardText != null && !clipboardText.trim().isEmpty()) {
                             // Check if the clipboardText is in URL format and leads to content
                             if (isValidAndAccessibleUrl(clipboardText)) {
                                 ArrayList<String> text = parseUrl(clipboardText);
-                                if (text != null) {
-                                    // create an RLE Parser with this text
-                                    RleParser parser = new RleParser(text);
-                                    grid = parser.parseFile();
-                                    if (grid == null) {
-                                        errorMessage = "Webpage provided is not in RLE format.";
-                                    } else {
-                                        inputValid = true;
-                                        successMessage = "Successfully parsed RLE webpage.";
-                                    }
+                                RleParser parser = new RleParser(text);
+                                grid = parser.parseFile();
+                                if (grid == null) {
+                                    errorMessage = "Webpage provided is not in RLE format.";
+                                } else {
+                                    successMessage = "Successfully parsed RLE webpage.";
                                 }
                             }
-                            // Test if it is a body of text with valid RLE format
+                            // Check if it is a valid body of RLE text
                             else if (isValidRleFormat(clipboardText)) {
-                                // parse text into ArrayList of strings
                                 ArrayList<String> text = parseRleText(clipboardText);
-                                // create an RLE Parser with this text
                                 RleParser parser = new RleParser(text);
                                 grid = parser.parseFile();
                                 if (grid == null) {
                                     errorMessage = "Text provided is not in RLE format.";
                                 } else {
-                                    inputValid = true;
                                     successMessage = "Successfully parsed RLE text.";
                                 }
                             }
-                            // Test if it is a file path
+                            // Check if it is a valid file path
                             else if (isValidPath(clipboardText)) {
-                                if (Files.exists(Paths.get(clipboardText))) {
-                                    RleParser parser = new RleParser(clipboardText);
-                                    grid = parser.parseFile();
-                                    if (grid == null) {
-                                        errorMessage = "File Path invalid or inaccessible.";
+                                try {
+                                    if (Files.exists(Paths.get(clipboardText))) {
+                                        RleParser parser = new RleParser(clipboardText);
+                                        grid = parser.parseFile();
+                                        if (grid == null) {
+                                            errorMessage = "File Path invalid or inaccessible.";
+                                        } else {
+                                            successMessage = "Successfully parsed RLE file.";
+                                        }
                                     } else {
-                                        inputValid = true;
-                                        successMessage = "Successfully parsed RLE file.";
+                                        errorMessage = "File Path invalid or inaccessible.";
                                     }
-                                } else {
-                                    errorMessage = "File Path invalid or inaccessible.";
+                                } catch (InvalidPathException ex) {
+                                    errorMessage = "Clipboard content is not a valid file path.";
                                 }
                             } else { // If it does not meet any criteria
                                 errorMessage = "Input does not match any RLE format criteria.";
@@ -231,20 +223,13 @@ public class GridFrame extends JFrame {
                         errorMessage = "No text found in clipboard.";
                     }
 
-                    // Respond based on input validity
-                    if (inputValid) {
+                    // Display appropriate message
+                    if (!successMessage.isEmpty()) {
                         message.setForeground(Color.BLACK);
                         message.setText(successMessage);
-                        if (grid != null) {
-                            resetGrid(grid);
-                            // Update the displayed grid component with the new grid
-                            pane.remove(gridComponent); // Remove the old grid
-                            gridComponent.setComponentGrid(gameGrid); // Create a new grid component with the new grid
-                            pane.add(gridComponent, BorderLayout.CENTER); // Add the updated grid component
-                            pane.revalidate(); // Revalidate the panel to apply changes
-                            pane.repaint();    // Repaint the panel to reflect the new grid
-                            gridComponent.repaint();
-                        }
+                        Grid g = new Grid(grid);
+                        g = calculateGrid(g);
+                        resetGrid(g.getGrid());
                     } else {
                         message.setForeground(Color.RED);
                         message.setText(errorMessage);
@@ -265,20 +250,20 @@ public class GridFrame extends JFrame {
         int width = gameGrid.getWidth();
         int hDiff = 0;
         int wDiff = 0;
-        int min = 100;
 
         // test whether height / width are below 100
         // Determine the dimensions for the new padded grid
-        if (height < min) {
-            hDiff = (min - height) / 2;
-            height = min;
+        if (height < MIN) {
+            hDiff = (MIN - height) / 2;
+            height = MIN;
         }
-        if (width < min) {
-            wDiff = (min - width) / 2;
-            width = min;
+        if (width < MIN) {
+            wDiff = (MIN - width) / 2;
+            width = MIN;
         }
+        int minDimen = Math.min(height, width);
 
-        paddedGrid = new int[height][width];
+        paddedGrid = new int[minDimen][minDimen];
 
         // Copy the original grid into the padded grid
         for (int i = 0; i < gameGrid.getHeight(); i++) {
@@ -328,32 +313,25 @@ public class GridFrame extends JFrame {
     }
 
     public ArrayList<String> parseUrl(String url) {
-        ArrayList<String> rleText = new ArrayList<>();
+        String rleContents = "";
         try {
-            // Connect to the URL and fetch the HTML content
-            Document doc = Jsoup.connect(url).get();
-            Elements textElements = doc.select("p, h1, h2, h3, h4, h5, h6, div, span");
-            for (Element element : textElements) {
-                String str = element.text();
-                if (!str.trim().isEmpty()) { // Skip empty or whitespace-only text
-                    rleText.add(str);
-                }
-            }
+            InputStream in = new URL(url).openStream();
+            rleContents = IOUtils.toString(in);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return rleText;
+        return parseRleText(rleContents);
     }
 
     public ArrayList<String> parseRleText(String text) {
         ArrayList<String> rleText = new ArrayList<>();
-        String tempText = text;
+        StringBuilder tempText = new StringBuilder(text);
 
         // Parse commented lines above header (if applicable)
         if (text.startsWith("#")) {
             int startIndex = 0;
             int endIndex;
-            while (tempText.contains("#")) // if there is at least one '#' in the string
+            while (tempText.indexOf("#") >= 0) // if there is at least one '#' in the string
             {
                 if (tempText.lastIndexOf("#") == startIndex) // if there is only 1 # symbol
                 {
@@ -364,7 +342,7 @@ public class GridFrame extends JFrame {
                     endIndex = tempStr.indexOf("#") + 1; // get second #
                 }
                 String line = tempText.substring(startIndex, endIndex);
-                tempText = tempText.substring(endIndex);
+                tempText.replace(startIndex, endIndex, "");
                 rleText.add(line);
             }
         }
@@ -372,22 +350,37 @@ public class GridFrame extends JFrame {
         // Parse header
         String line = "";
         Pattern header = Pattern.compile("x\\s=\\s(\\d+),\\sy\\s=\\s(\\d+)");
-        Pattern rule = Pattern.compile("rule\\\\s=\\\\s([a-zA-Z0-9]+)");
+        Pattern rule = Pattern.compile("rule = [\\S\\s]+?\\n");
         Matcher matcher = rule.matcher(tempText);
-        if (!matcher.find()) {
+
+        boolean found = matcher.find();
+        int end = matcher.end();
+        // What is wrong with this block of code?
+        // Matcher.find() is returning true but program does not enter second loop
+        if (!found) {
             matcher = header.matcher(tempText);
+            end = matcher.end();
         }
-        if (matcher.find()) {
-            line = tempText.substring(0, matcher.end());
-            tempText = tempText.substring(matcher.end()); // cut off header
+        if (found || matcher.find()) {
+            line = tempText.toString().substring(0, end);
+            tempText.replace(0, matcher.end(), ""); // cut off header
         }
         rleText.add(line);
 
         // Put the rest of text in the array
-        String conwayChars = "^[ 0-9$!bo]+$"; // checks for only allowed characters
-        if (tempText.matches(conwayChars) && (tempText.endsWith("!"))) // contains only one ! at the end
+        if (tempText.toString().endsWith("!")) // contains one ! at the end
         {
-            rleText.add(tempText);
+            int enter = tempText.indexOf("\n");
+            while (enter >= 0) // if string contains a "\n"
+            {
+                String str = tempText.substring(0, enter);
+                rleText.add(str);
+                tempText = new StringBuilder(tempText.substring(enter + 1)); // isolate next part of string
+                enter = tempText.indexOf("\n"); // re-assign enter
+            }
+            if (!tempText.isEmpty()) {
+                rleText.add(tempText.toString());
+            }
         }
 
         return rleText;

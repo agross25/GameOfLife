@@ -4,66 +4,63 @@ import gross.gameoflife.grid.Grid;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 
 public class GridComponent extends JComponent {
 
     private Grid gameGrid;
     private int cellSize;
+    private int startX, startY;
 
     public GridComponent(Grid grid) {
         this.gameGrid = grid;
+
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                recalculateGridDimensions();
+            }
+        });
         initMouseListener();
     }
     // Timer timer = new Timer(10, e -> repaint());
+
+    private void recalculateGridDimensions() {
+        int totalRows = gameGrid.getHeight();
+        int totalCols = gameGrid.getWidth();
+
+        int availableHeight = getHeight();
+        int availableWidth = getWidth();
+
+        cellSize = Math.min(availableHeight / totalRows, availableWidth / totalCols);
+
+        int gridHeight = cellSize * totalRows;
+        int gridWidth = cellSize * totalCols;
+
+        startX = (availableWidth - gridWidth) / 2;
+        startY = (availableHeight - gridHeight) / 2;
+    }
 
     private void initMouseListener() {
         addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // Get the number of rows and columns from the grid
-                int totalRows = gameGrid.getHeight();
-                int totalCols = gameGrid.getWidth();
-
-                // Get the available space in the component
-                int availableHeight = getHeight();
-                int availableWidth = getWidth();
-
-                // Determine the largest square cell size that fits within the available width and height
-                int cellSize = Math.min(availableHeight / totalRows, availableWidth / totalCols);
-
-                // Calculate the total grid size based on the cell size
-                int gridHeight = cellSize * totalRows;
-                int gridWidth = cellSize * totalCols;
-
-                // Calculate the starting X and Y positions to center the grid
-                int startX = (availableWidth - gridWidth) / 2;
-                int startY = (availableHeight - gridHeight) / 2;
-
-                // Get the mouse click coordinates
                 int mouseX = e.getX();
                 int mouseY = e.getY();
 
-                // Adjust the mouse coordinates to match the grid's position
                 int adjustedX = mouseX - startX;
                 int adjustedY = mouseY - startY;
 
-                // Ensure the click is within the bounds of the grid
-                if (adjustedX >= 0 && adjustedY >= 0 && adjustedX < gridWidth && adjustedY < gridHeight) {
-                    // Calculate the row and column that was clicked
+                if (adjustedX >= 0 && adjustedY >= 0 && adjustedX < cellSize * gameGrid.getWidth() && adjustedY < cellSize * gameGrid.getHeight()) {
                     int clickedRow = adjustedY / cellSize;
                     int clickedCol = adjustedX / cellSize;
 
-                    // Toggle the cell's status
                     if (gameGrid.getCellStatus(clickedRow, clickedCol) == 0) {
                         gameGrid.setCellAlive(clickedRow, clickedCol);
                     } else {
                         gameGrid.setCellDead(clickedRow, clickedCol);
                     }
 
-                    // Repaint the grid to reflect changes
                     repaint();
                 }
             }
