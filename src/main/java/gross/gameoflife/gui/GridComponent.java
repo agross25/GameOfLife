@@ -4,33 +4,65 @@ import gross.gameoflife.grid.Grid;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 
 public class GridComponent extends JComponent {
 
     private Grid gameGrid;
+    private int cellSize;
+    private int startX, startY;
 
     public GridComponent(Grid grid) {
         this.gameGrid = grid;
 
-        Timer timer = new Timer(10, e -> repaint());
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                recalculateGridDimensions();
+            }
+        });
+        initMouseListener();
+    }
+    // Timer timer = new Timer(10, e -> repaint());
 
+    private void recalculateGridDimensions() {
+        int totalRows = gameGrid.getHeight();
+        int totalCols = gameGrid.getWidth();
+
+        int availableHeight = getHeight();
+        int availableWidth = getWidth();
+
+        cellSize = Math.min(availableHeight / totalRows, availableWidth / totalCols);
+
+        int gridHeight = cellSize * totalRows;
+        int gridWidth = cellSize * totalCols;
+
+        startX = (availableWidth - gridWidth) / 2;
+        startY = (availableHeight - gridHeight) / 2;
+    }
+
+    private void initMouseListener() {
         addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int row = e.getX() / 20;
-                int column = e.getY() / 20;
+                int mouseX = e.getX();
+                int mouseY = e.getY();
 
-                if (grid.getCellStatus(row, column) == 0) // if cell is dead
-                {
-                    grid.setCellAlive(row, column);
-                } else // if cell is alive
-                {
-                    grid.setCellDead(row, column);
+                int adjustedX = mouseX - startX;
+                int adjustedY = mouseY - startY;
+
+                if (adjustedX >= 0 && adjustedY >= 0 && adjustedX < cellSize * gameGrid.getWidth() && adjustedY < cellSize * gameGrid.getHeight()) {
+                    int clickedRow = adjustedY / cellSize;
+                    int clickedCol = adjustedX / cellSize;
+
+                    if (gameGrid.getCellStatus(clickedRow, clickedCol) == 0) {
+                        gameGrid.setCellAlive(clickedRow, clickedCol);
+                    } else {
+                        gameGrid.setCellDead(clickedRow, clickedCol);
+                    }
+
+                    repaint();
                 }
-                repaint();
             }
 
             @Override
@@ -66,20 +98,57 @@ public class GridComponent extends JComponent {
         });
     }
 
+    public void setComponentGrid(Grid grid) {
+        this.gameGrid = grid;
+        removeMouseListeners();
+        initMouseListener();
+    }
+
+    // Remove existing mouse listeners to prevent duplication
+    private void removeMouseListeners() {
+        for (MouseListener listener : getMouseListeners()) {
+            removeMouseListener(listener);
+        }
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, getWidth(), getHeight());
+        // Get the number of rows and columns from the grid
+        int totalRows = gameGrid.getHeight();
+        int totalCols = gameGrid.getWidth();
 
-        for (int y = 0; y < gameGrid.getHeight(); y++) {
-            for (int x = 0; x < gameGrid.getWidth(); x++) {
-                if (gameGrid.getCellStatus(x, y) == 1) // if cell is alive
-                {
+        // Get the available space in the component
+        int availableHeight = getHeight();
+        int availableWidth = getWidth();
+
+        // Determine the largest square cell size that fits within the available width and height
+        cellSize = Math.min(availableHeight / totalRows, availableWidth / totalCols);
+
+        // Calculate the total grid size based on the cell size
+        int gridHeight = cellSize * totalRows;
+        int gridWidth = cellSize * totalCols;
+
+        // Center the grid inside the component
+        int startX = (availableWidth - gridWidth) / 2;
+        int startY = (availableHeight - gridHeight) / 2;
+
+        // Draw the cells and gridlines using the calculated square cell size
+        for (int row = 0; row < totalRows; row++) {
+            for (int col = 0; col < totalCols; col++) {
+                int x = startX + col * cellSize;
+                int y = startY + row * cellSize;
+
+                // Draw live cells as green
+                if (gameGrid.getCellStatus(row, col) == 1) {
                     g.setColor(Color.GREEN);
-                    g.fillRect(x * 20, y * 20, 20, 20);
+                    g.fillRect(x, y, cellSize, cellSize); // Draw square cell
                 }
+
+                // Draw grid lines
+                g.setColor(Color.GRAY);
+                g.drawRect(x, y, cellSize, cellSize); // Draw square grid lines
             }
         }
     }

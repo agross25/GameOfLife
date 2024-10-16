@@ -11,6 +11,11 @@ public class Grid {
         board = new int[height][width];
     }
 
+    // additional constructor to pass 2D array straight in as grid
+    public Grid(int[][] grid) {
+        board = grid;
+    }
+
     public int getCellStatus(int row, int column) {
         return board[row][column];
     }
@@ -21,6 +26,10 @@ public class Grid {
 
     public int getWidth() {
         return board[0].length;
+    }
+
+    public int[][] getGrid() {
+        return board;
     }
 
     // method to set a living cell
