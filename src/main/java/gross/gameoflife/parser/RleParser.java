@@ -42,7 +42,7 @@ public class RleParser {
         Matcher matcher = null;
 
         // Eliminate comments above header
-        rleText = clean(rleText);
+        rleText = removeComments(rleText);
 
         // Identify header and cell text
         int headerIndex = getHeaderIndex(rleText);
@@ -136,7 +136,7 @@ public class RleParser {
         return rleText;
     }
 
-    public ArrayList<String> clean(ArrayList<String> txt) {
+    public ArrayList<String> removeComments(ArrayList<String> txt) {
         ArrayList<String> cleanTxt = new ArrayList<>();
         // Identify the index of the header by skipping lines beginning with #
         int index = 0;

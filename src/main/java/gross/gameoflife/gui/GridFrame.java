@@ -295,7 +295,7 @@ public class GridFrame extends JFrame {
             Pattern regex = Pattern.compile("x\\s=\\s(\\d+),\\sy\\s=\\s(\\d+)");
             Matcher matcher = regex.matcher(text);
             if (matcher.find()) {
-                if (text.endsWith("!")) {
+                if (text.contains("!")) {
                     return true;
                 }
             }
@@ -367,20 +367,11 @@ public class GridFrame extends JFrame {
         }
         rleText.add(line);
 
+        // Remove escape sequences
+        String cellPattern = tempText.toString().replaceAll("\\r?\\n", "");
         // Put the rest of text in the array
-        if (tempText.toString().endsWith("!")) // contains one ! at the end
-        {
-            int enter = tempText.indexOf("\n");
-            while (enter >= 0) // if string contains a "\n"
-            {
-                String str = tempText.substring(0, enter);
-                rleText.add(str);
-                tempText = new StringBuilder(tempText.substring(enter + 1)); // isolate next part of string
-                enter = tempText.indexOf("\n"); // re-assign enter
-            }
-            if (!tempText.isEmpty()) {
-                rleText.add(tempText.toString());
-            }
+        if (cellPattern.endsWith("!")) {
+            rleText.add(cellPattern);
         }
 
         return rleText;
