@@ -7,7 +7,7 @@ public class GuiTest {
         GridFrame frame = new GridFrame();
         frame.setVisible(true);
 
-//      use Parser
+        // use Parser
         // String pathname = "glider.rle";
         // RleParser parser = new RleParser(pathname);
         // int[][] grid = parser.parseFile();

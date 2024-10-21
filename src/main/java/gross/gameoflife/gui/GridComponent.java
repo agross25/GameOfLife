@@ -10,7 +10,8 @@ public class GridComponent extends JComponent {
 
     private Grid gameGrid;
     private int cellSize;
-    private int startX, startY;
+    private int startX;
+    private int startY;
 
     public GridComponent(Grid grid) {
         this.gameGrid = grid;
@@ -51,17 +52,18 @@ public class GridComponent extends JComponent {
                 int adjustedX = mouseX - startX;
                 int adjustedY = mouseY - startY;
 
-                if (adjustedX >= 0 && adjustedY >= 0 && adjustedX < cellSize * gameGrid.getWidth() && adjustedY < cellSize * gameGrid.getHeight()) {
-                    int clickedRow = adjustedY / cellSize;
-                    int clickedCol = adjustedX / cellSize;
+                if (adjustedX >= 0 && adjustedY >= 0) {
+                    if (adjustedX < cellSize * gameGrid.getWidth() && adjustedY < cellSize * gameGrid.getHeight()) {
+                        int clickedRow = adjustedY / cellSize;
+                        int clickedCol = adjustedX / cellSize;
 
-                    if (gameGrid.getCellStatus(clickedRow, clickedCol) == 0) {
-                        gameGrid.setCellAlive(clickedRow, clickedCol);
-                    } else {
-                        gameGrid.setCellDead(clickedRow, clickedCol);
+                        if (gameGrid.getCellStatus(clickedRow, clickedCol) == 0) {
+                            gameGrid.setCellAlive(clickedRow, clickedCol);
+                        } else {
+                            gameGrid.setCellDead(clickedRow, clickedCol);
+                        }
+                        repaint();
                     }
-
-                    repaint();
                 }
             }
 

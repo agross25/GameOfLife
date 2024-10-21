@@ -28,11 +28,11 @@ public class GridFrame extends JFrame {
     private Timer timer;
     private Grid gameGrid;
     private GridComponent gridComponent;
-    private final int MIN = 100;
+    private final int min = 100;
 
     // default constructor
     public GridFrame() {
-        gameGrid = new Grid(MIN, MIN);
+        gameGrid = new Grid(min, min);
         gridComponent = new GridComponent(gameGrid);
         setFrame();
     }
@@ -184,9 +184,7 @@ public class GridFrame extends JFrame {
                                 } else {
                                     successMessage = "Successfully parsed RLE webpage.";
                                 }
-                            }
-                            // Check if it is a valid body of RLE text
-                            else if (isValidRleFormat(clipboardText)) {
+                            } else if (isValidRleFormat(clipboardText)) { // Check if it is a valid body of RLE text
                                 ArrayList<String> text = parseRleText(clipboardText);
                                 RleParser parser = new RleParser(text);
                                 grid = parser.parseFile();
@@ -195,9 +193,7 @@ public class GridFrame extends JFrame {
                                 } else {
                                     successMessage = "Successfully parsed RLE text.";
                                 }
-                            }
-                            // Check if it is a valid file path
-                            else if (isValidPath(clipboardText)) {
+                            } else if (isValidPath(clipboardText)) { // Check if it is a valid file path
                                 try {
                                     if (Files.exists(Paths.get(clipboardText))) {
                                         RleParser parser = new RleParser(clipboardText);
@@ -253,13 +249,13 @@ public class GridFrame extends JFrame {
 
         // test whether height / width are below 100
         // Determine the dimensions for the new padded grid
-        if (height < MIN) {
-            hDiff = (MIN - height) / 2;
-            height = MIN;
+        if (height < min) {
+            hDiff = (min - height) / 2;
+            height = min;
         }
-        if (width < MIN) {
-            wDiff = (MIN - width) / 2;
-            width = MIN;
+        if (width < min) {
+            wDiff = (min - width) / 2;
+            width = min;
         }
         int minDimen = Math.min(height, width);
 
