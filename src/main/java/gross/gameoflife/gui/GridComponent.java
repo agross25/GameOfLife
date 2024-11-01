@@ -4,7 +4,8 @@ import gross.gameoflife.grid.Grid;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class GridComponent extends JComponent {
 
@@ -22,96 +23,47 @@ public class GridComponent extends JComponent {
                 recalculateGridDimensions();
             }
         });
-        initMouseListener();
     }
-    // Timer timer = new Timer(10, e -> repaint());
 
     private void recalculateGridDimensions() {
+        // Calculate number of rows and columns in grid
         int totalRows = gameGrid.getHeight();
         int totalCols = gameGrid.getWidth();
 
-        int availableHeight = getHeight();
-        int availableWidth = getWidth();
+        // Calculate available height and width in component
+        int componentHeight = getHeight(); // including top and bottom?
+        int componentWidth = getWidth();
 
-        cellSize = Math.min(availableHeight / totalRows, availableWidth / totalCols);
+        // Calculate biggest possible cell size for square cell
+        cellSize = Math.min(componentHeight / totalRows, componentWidth / totalCols);
 
+        // Get size of the grid in pixels
         int gridHeight = cellSize * totalRows;
         int gridWidth = cellSize * totalCols;
 
-        startX = (availableWidth - gridWidth) / 2;
-        startY = (availableHeight - gridHeight) / 2;
+        // How much padding will be on either side of grid - grid starts here
+        startX = (componentWidth - gridWidth) / 2;
+        startY = (componentHeight - gridHeight) / 2;
     }
 
-    private void initMouseListener() {
-        addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int mouseX = e.getX();
-                int mouseY = e.getY();
+    public int getStartX() {
+        return startX;
+    }
 
-                int adjustedX = mouseX - startX;
-                int adjustedY = mouseY - startY;
+    public int getStartY() {
+        return startY;
+    }
 
-                if (adjustedX >= 0 && adjustedY >= 0) {
-                    if (adjustedX < cellSize * gameGrid.getWidth() && adjustedY < cellSize * gameGrid.getHeight()) {
-                        int clickedRow = adjustedY / cellSize;
-                        int clickedCol = adjustedX / cellSize;
-
-                        if (gameGrid.getCellStatus(clickedRow, clickedCol) == 0) {
-                            gameGrid.setCellAlive(clickedRow, clickedCol);
-                        } else {
-                            gameGrid.setCellDead(clickedRow, clickedCol);
-                        }
-                        repaint();
-                    }
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        });
-
-        addMouseMotionListener(new MouseMotionListener() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-
-            }
-        });
+    public int getCellSize() {
+        return cellSize;
     }
 
     public void setComponentGrid(Grid grid) {
         this.gameGrid = grid;
-        removeMouseListeners();
-        initMouseListener();
     }
 
     // Remove existing mouse listeners to prevent duplication
-    private void removeMouseListeners() {
-        for (MouseListener listener : getMouseListeners()) {
-            removeMouseListener(listener);
-        }
-    }
+
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -133,8 +85,8 @@ public class GridComponent extends JComponent {
         int gridWidth = cellSize * totalCols;
 
         // Center the grid inside the component
-        int startX = (availableWidth - gridWidth) / 2;
-        int startY = (availableHeight - gridHeight) / 2;
+        startX = (availableWidth - gridWidth) / 2;
+        startY = (availableHeight - gridHeight) / 2;
 
         // Draw the cells and gridlines using the calculated square cell size
         for (int row = 0; row < totalRows; row++) {

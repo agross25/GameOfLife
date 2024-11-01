@@ -5,6 +5,7 @@ import java.util.ArrayList;
 public class Grid {
 
     private int[][] board;
+    // GridController - pass to GridFrame?
 
     // grid constructor
     public Grid(int height, int width) {
@@ -32,7 +33,7 @@ public class Grid {
         return board;
     }
 
-    // method to set a living cell
+    // methods to set a cell
     public void setCellAlive(int row, int column) {
         if (row >= board.length || column >= board[row].length) {
             System.out.println("Action aborted. Provided dimensions are out of bounds.");
@@ -90,6 +91,7 @@ public class Grid {
         }
         // kill all cells in cellsToDie
         for (int[] cellToKill : cellsToDie) {
+            // controller.toggleCell();
             setCellDead(cellToKill[0], cellToKill[1]);
         }
 
