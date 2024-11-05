@@ -260,16 +260,16 @@ public class GridController {
             }
         }
     }
-//        int x = startX / view.getWidth();
-//        int y = startY / view.getHeight();
+//    int x = mouseX / view.getWidth() ;
+//    int y = mouseY / view.getHeight();
 //        if (x < model.getWidth() && y < model.getHeight()) {
-//            int currentState = model.getCellStatus(x, y);
-//            if (currentState == 1) {
-//                model.setCellDead(x, y);
-//            } else {
-//                model.setCellAlive(x, y);
-//            }
-//            view.repaint();
+//        int currentState = model.getCellStatus(x, y);
+//        if (currentState == 1) {
+//            model.setCellDead(x, y);
+//        } else {
+//            model.setCellAlive(x, y);
 //        }
+//        view.repaint();
 //    }
+//}
 }
