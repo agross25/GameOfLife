@@ -30,15 +30,6 @@ public class GridFrame extends JFrame {
         initMouseListener();
     }
 
-    // 2nd constructor
-    public GridFrame(int[][] grid) {
-        gameGrid = new Grid(grid);
-        gridComponent = new GridComponent(gameGrid);
-        controller = new GridController(gameGrid, gridComponent);
-        setFrame();
-        initMouseListener();
-    }
-
     public void setFrame() {
         setupFrame();
         Container pane = getContentPane();
@@ -172,7 +163,7 @@ public class GridFrame extends JFrame {
     }
 
     private void initMouseListener() {
-        addMouseListener(new MouseListener() {
+        gridComponent.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int mouseX = e.getX();

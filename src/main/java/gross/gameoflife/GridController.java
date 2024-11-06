@@ -133,7 +133,9 @@ public class GridController {
                 paddedGrid[i + hDiff][j + wDiff] = gameGrid.getCellStatus(i, j);
             }
         }
-        return new Grid(paddedGrid);
+        Grid newGrid = new Grid(paddedGrid);
+        model = newGrid;
+        return newGrid;
     }
 
     public boolean isValidAndAccessibleUrl(String urlString) {
