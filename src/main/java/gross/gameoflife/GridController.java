@@ -256,7 +256,6 @@ public class GridController {
                 } else {
                     model.setCellDead(clickedRow, clickedCol);
                 }
-                System.out.println(clickedRow + ", " + clickedCol);
                 view.repaint();
             }
         }
