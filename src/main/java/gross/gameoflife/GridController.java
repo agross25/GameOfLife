@@ -258,7 +258,6 @@ public class GridController {
                 }
                 System.out.println(clickedRow + ", " + clickedCol);
                 view.repaint();
-                System.out.println("Repainted!");
             }
         }
     }
